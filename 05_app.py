@@ -92,7 +92,9 @@ if st.sidebar.button("🔄 최신 데이터로 예측하기", type="primary", us
                              use_container_width=True)
 
         except Exception as e:
-            st.sidebar.error(f"❌ 실패: {e}")
+            import traceback
+            st.error(f"에러: {e}")
+            st.code(traceback.format_exc())
 
 st.sidebar.info("""
 **임계값 0.05 기준**
