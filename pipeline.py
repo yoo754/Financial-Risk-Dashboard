@@ -46,8 +46,8 @@ def fetch_realtime_stock(days: int = 60):
 # 2. ECOS 금리 수집
 @st.cache_data(ttl=3600)
 def fetch_realtime_rates(days: int = 60):
-    end   = datetime.today()
-    start = end - timedelta(days=days)
+    end       = datetime.today()
+    start     = end - timedelta(days=days)
 
     def _fetch(stat_code, item_code, name, freq="D"):
         if freq == "D":
@@ -67,21 +67,18 @@ def fetch_realtime_rates(days: int = 60):
         rows = resp.json().get("StatisticSearch", {}).get("row", [])
         if not rows:
             return pd.Series(dtype=float, name=name)
-        return pd.Series(
+        series = pd.Series(
             [float(r["DATA_VALUE"]) for r in rows],
             index=pd.to_datetime([r["TIME"] for r in rows], format=fmt),
             name=name
         )
+        return series
 
     base_rate = _fetch("722Y001", "0101000", "기준금리", freq="M")
     bond_3y   = _fetch("817Y002", "010200000", "국고채3년", freq="D")
 
-    idx = pd.date_range(base_rate.index.min(), end, freq="D")
-    base_rate = base_rate.reindex(idx).ffill()
-
-    idx2 = pd.date_range(bond_3y.index.min(), end, freq="D")
-    bond_3y = bond_3y.reindex(idx2).ffill()
-
+    base_rate = base_rate.resample("D").ffill()
+    bond_3y   = bond_3y.resample("D").ffill()
 
     return pd.concat([base_rate, bond_3y], axis=1).ffill()
 
