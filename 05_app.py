@@ -1,16 +1,27 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
+import urllib.request
+import os
 # import lightgbm as lgb
 # from scipy import stats
 from pipeline import (fetch_realtime_stock, fetch_realtime_rates,
                       fetch_realtime_vix, preprocess, predict_risk)
 
+@st.cache_resource
+def set_korean_font():
+    font_url = "https://github.com/google/fonts/raw/main/ofl/nanumgothic/NanumGothic-Regular.ttf"
+    font_path = "/tmp/NanumGothic.ttf"
+    if not os.path.exists(font_path):
+        urllib.request.urlretrieve(font_url, font_path)
+    fm.fontManager.addfont(font_path)
+    matplotlib.rcParams["font.family"] = "NanumGothic"
+    matplotlib.rcParams["axes.unicode_minus"] = False
 
-matplotlib.rcParams["font.family"] = "Malgun Gothic"
-matplotlib.rcParams["axes.unicode_minus"] = False
+set_korean_font()
 
 st.set_page_config(
     page_title="금융상품 리스크 분석 시스템",
